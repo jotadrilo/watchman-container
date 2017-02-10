@@ -1,19 +1,17 @@
-#!/bin/bash
-
-set -eu
+#!/usr/bin/env bats
 
 source ./utils
 
-run () {
-    docker run --rm "$IMAGE_NAME:$IMAGE_TAG" "$@"
-    echo "OK"
+setup () {
+    status "Query GitHub API to get the latest stable tag"
+    IMAGE_TAG=$(latestTag)
+    msg ${IMAGE_TAG:-"Not found"}
 }
 
-status "Query GitHub API to get the latest stable tag"
-IMAGE_TAG=$(latestTag)
-msg $IMAGE_TAG
+@test "watchman is in PATH" {
+   run which watchman >/dev/null 2>&1
+}
 
-status "Test $IMAGE_NAME:$IMAGE_TAG"
-
-report "Check watchman is in PATH"
-run bash -c '[ -n "$(which watchman)" ]'
+@test "watchman version matches latest" {
+   [ "$(run watchman --version)" == "$IMAGE_TAG" ]
+}

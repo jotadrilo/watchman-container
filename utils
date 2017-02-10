@@ -1,13 +1,24 @@
 #!/bin/bash
 
+# List tags in facebook/watchman repository
+# https://developer.github.com/v3/repos/#list-tags
 tags () {
-    curl -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -s https://api.github.com/repos/facebook/watchman/tags 2>/dev/null
+    if [[ -n "$GITHUB_OAUTH_TOKEN" ]]; then
+        # Avoid GitHub API rate limit
+        # https://developer.github.com/v3/#rate-limiting
+        curl -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -s https://api.github.com/repos/facebook/watchman/tags 2>/dev/null
+    else
+        # Fallback when GitHub OAUTH token is not present
+        curl -s https://api.github.com/repos/facebook/watchman/tags 2>/dev/null
+    fi
 }
 
+# Get the latest stable (non "rc") tag and remove the trailing version flag "v"
 latestTag () {
     tags | jq .[].name | sort -r | grep -v rc | head -n1 | tr -d v\"
 }
 
+# Status header for cosmetics purposes
 status () {
     echo ""
     echo "==================================================================="
@@ -15,10 +26,12 @@ status () {
     echo "==================================================================="
 }
 
+# Simple message for cosmetics purposes
 msg () {
     echo " --> $@"
 }
 
-report () {
-    echo -n " --> $@: "
+# Run arguments in IMAGE_NAME:IMAGE_TAG container and remove it at exit
+run () {
+    docker run --rm "$IMAGE_NAME:$IMAGE_TAG" "$@"
 }

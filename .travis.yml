@@ -6,7 +6,12 @@ before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y jq
 install: true
-script: bash build && bash test
+before_script:
+  - wget https://github.com/sstephenson/bats/archive/v0.4.0.tar.gz -O /tmp/bats.tar.gz
+  - tar -xvf /tmp/bats.tar.gz -C /tmp
+  - export PATH=$PATH:/tmp/bats-0.4.0/bin
+  - export IMAGE_NAME=${IMAGE_NAME:-"jotadrilo/nuclide-remote"}
+script: bash build && bats test
 deploy:
   provider: script
   script: bash push
