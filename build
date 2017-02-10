@@ -1,14 +1,14 @@
 #!/bin/bash
 
-set -eu
+set -e
 
 source ./utils
 
 status "Query GitHub API to get the latest stable tag"
 IMAGE_TAG=$(latestTag)
-msg $IMAGE_TAG
+msg ${IMAGE_TAG:-"Not found"}
 
-if [[ -n "$IMAGE_TAG" ]]; then
+if [[ -n "${IMAGE_TAG}" ]]; then
     status "Update Dockerfile with the latest stable tag"
     sed "s|ENV\s*WATCHMAN_VERSION=.*|ENV WATCHMAN_VERSION=$IMAGE_TAG|g" -i Dockerfile
     msg OK
@@ -20,4 +20,8 @@ if [[ -n "$IMAGE_TAG" ]]; then
     status "Tag image $IMAGE_NAME:latest from $IMAGE_NAME:$IMAGE_TAG"
     docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:latest
     msg OK
+else
+    status "Build failed"
+    msg Latest stable tag not found
+    exit 1
 fi
