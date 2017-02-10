@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -eu
+
+source ./utils
+
+run () {
+    docker run --rm "$IMAGE_NAME:$IMAGE_TAG" "$@"
+    echo "OK"
+}
+
+status "Query GitHub API to get the latest stable tag"
+IMAGE_TAG=$(latestTag)
+msg $IMAGE_TAG
+
+status "Test $IMAGE_NAME:$IMAGE_TAG"
+
+report "Check watchman is in PATH"
+run bash -c '[ -n "$(which watchman)" ]'

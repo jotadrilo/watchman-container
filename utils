@@ -1,0 +1,24 @@
+#!/bin/bash
+
+tags () {
+    curl -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -s https://api.github.com/repos/facebook/watchman/tags 2>/dev/null
+}
+
+latestTag () {
+    tags | jq .[].name | sort -r | grep -v rc | head -n1 | tr -d v\"
+}
+
+status () {
+    echo ""
+    echo "==================================================================="
+    echo " $@"
+    echo "==================================================================="
+}
+
+msg () {
+    echo " --> $@"
+}
+
+report () {
+    echo -n " --> $@: "
+}

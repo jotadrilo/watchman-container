@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -eu
+
+source ./utils
+
+status "Query GitHub API to get the latest stable tag"
+IMAGE_TAG=$(latestTag)
+msg $IMAGE_TAG
+
+status "Login DockerHub"
+docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+msg OK
+
+status "Pushing $IMAGE_NAME:$IMAGE_TAG"
+docker push $IMAGE_NAME:$IMAGE_TAG
+msg OK
+
+status "Pushing $IMAGE_NAME:latest"
+docker push $IMAGE_NAME:latest
+msg OK

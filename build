@@ -1,0 +1,23 @@
+#!/bin/bash
+
+set -eu
+
+source ./utils
+
+status "Query GitHub API to get the latest stable tag"
+IMAGE_TAG=$(latestTag)
+msg $IMAGE_TAG
+
+if [[ -n "$IMAGE_TAG" ]]; then
+    status "Update Dockerfile with the latest stable tag"
+    sed "s|ENV\s*WATCHMAN_VERSION=.*|ENV WATCHMAN_VERSION=$IMAGE_TAG|g" -i Dockerfile
+    msg OK
+
+    status "Build image $IMAGE_NAME:$IMAGE_TAG"
+    docker build . --tag $IMAGE_NAME:$IMAGE_TAG
+    msg OK
+
+    status "Tag image $IMAGE_NAME:latest from $IMAGE_NAME:$IMAGE_TAG"
+    docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:latest
+    msg OK
+fi
